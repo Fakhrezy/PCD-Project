@@ -57,21 +57,21 @@ def segment_color(hsv_plate):
     return mask_black, mask_white, mask_yellow, mask_red, mask_green
 
 # Load gambar plat nomor
-img = cv.imread('projectPCD/data/plathitam1.jpg')
+img = cv.imread('projectPCD/data/plathijau1.jpeg')
 
-# Prapengolahan
-# Normalisasi Cahaya
+#? PRA-PENGOLAHAN
+#* Normalisasi Cahaya
 kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (20, 20))
 img_opening = cv.morphologyEx(img, cv.MORPH_OPEN, kernel)
 img_norm = img - img_opening
 
-# Konversi citra keabuan (grayscale)
+#* Konversi citra keabuan (grayscale)
 img_gray = cv.cvtColor(img_norm, cv.COLOR_BGR2GRAY)
 
-# Thresholding menggunakan metode Otsu
+#* Thresholding menggunakan metode Otsu
 _, img_thresh = cv.threshold(img_gray, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
-# Deteksi plat menggunakan contours
+#* Deteksi plat menggunakan contours
 contours_vehicle, _ = cv.findContours(img_thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
 # Cek jumlah contours
@@ -91,10 +91,10 @@ else:
     cv.rectangle(img, (x_plate, y_plate), (x_plate + w_plate, y_plate + h_plate), (0, 255, 0), 5)
     plate_roi = img[y_plate:y_plate + h_plate, x_plate:x_plate + w_plate]
 
-    # Crop gambar menggunakan koordinat plat nomor yang terdeteksi
+    #* Crop gambar menggunakan koordinat plat nomor yang terdeteksi
     cropped_img = img[y_plate:y_plate + h_plate, x_plate:x_plate + w_plate]
 
-    # Segmentasi Warna
+    #? SEGMENTASI WARNA
     # Konversi ke model warna HSV
     hsv_plate = cv.cvtColor(cropped_img, cv.COLOR_BGR2HSV)
 
