@@ -2,8 +2,55 @@ import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 
+# Fungsi untuk mengklasifikasikan warna kendaraan
+def classify_color(mask_black, mask_white, mask_yellow, mask_red):
+    # Hitung jumlah piksel warna pada setiap mask
+    count_black = cv.countNonZero(mask_black)
+    count_white = cv.countNonZero(mask_white)
+    count_yellow = cv.countNonZero(mask_yellow)
+    count_red = cv.countNonZero(mask_red)
+
+    # Klasifikasi berdasarkan jumlah piksel warna
+    if count_red > count_black and count_red > count_white and count_red > count_yellow:
+        return "Kendaraan Pemerintah"
+    elif count_black > count_white and count_black > count_yellow and count_black > count_red:
+        return "Kendaraan Pribadi"
+    elif count_white > count_black and count_white > count_yellow and count_white > count_red:
+        return "Kendaraan Pribadi"
+    elif count_yellow > count_black and count_yellow > count_white and count_yellow > count_red:
+        return "Kendaraan Umum"
+    else:
+        return "Tidak Diketahui"
+
+# Fungsi untuk melakukan segmentasi warna pada citra HSV
+def segment_color(hsv_plate):
+    # Tentukan rentang warna untuk hitam, putih, kuning, dan merah
+    lower_black = np.array([0, 0, 0])
+    upper_black = np.array([180, 255, 30])
+
+    lower_white = np.array([0, 0, 200])
+    upper_white = np.array([180, 30, 255])
+
+    lower_yellow = np.array([20, 100, 100])
+    upper_yellow = np.array([40, 255, 255])
+
+    lower_red1 = np.array([0, 100, 100])
+    upper_red1 = np.array([10, 255, 255])
+    lower_red2 = np.array([160, 100, 100])
+    upper_red2 = np.array([180, 255, 255])
+
+    # Buat mask untuk setiap warna
+    mask_black = cv.inRange(hsv_plate, lower_black, upper_black)
+    mask_white = cv.inRange(hsv_plate, lower_white, upper_white)
+    mask_yellow = cv.inRange(hsv_plate, lower_yellow, upper_yellow)
+    mask_red1 = cv.inRange(hsv_plate, lower_red1, upper_red1)
+    mask_red2 = cv.inRange(hsv_plate, lower_red2, upper_red2)
+    mask_red = cv.bitwise_or(mask_red1, mask_red2)
+
+    return mask_black, mask_white, mask_yellow, mask_red
+
 # Load gambar plat nomor
-img = cv.imread('projectPCD/data/plathitam2.jpg')
+img = cv.imread('projectPCD/data/platmerah.jpg')
 
 # Prapengolahan
 # Normalisasi Cahaya
@@ -37,54 +84,24 @@ else:
     cv.rectangle(img, (x_plate, y_plate), (x_plate + w_plate, y_plate + h_plate), (0, 255, 0), 5)
     plate_roi = img[y_plate:y_plate + h_plate, x_plate:x_plate + w_plate]
 
+    # Crop gambar menggunakan koordinat plat nomor yang terdeteksi
+    cropped_img = img[y_plate:y_plate + h_plate, x_plate:x_plate + w_plate]
+
     # Segmentasi Warna
     # Konversi ke model warna HSV
-    hsv_plate = cv.cvtColor(plate_roi, cv.COLOR_BGR2HSV)
+    hsv_plate = cv.cvtColor(cropped_img, cv.COLOR_BGR2HSV)
 
-    # Tentukan rentang warna untuk hitam, putih, kuning, dan merah
-    lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 255, 30])
+    # Lakukan segmentasi warna pada citra HSV
+    mask_black, mask_white, mask_yellow, mask_red = segment_color(hsv_plate)
 
-    lower_white = np.array([0, 0, 200])
-    upper_white = np.array([180, 30, 255])
-
-    lower_yellow = np.array([20, 100, 100])
-    upper_yellow = np.array([40, 255, 255])
-
-    lower_red1 = np.array([0, 100, 100])
-    upper_red1 = np.array([10, 255, 255])
-    lower_red2 = np.array([160, 100, 100])
-    upper_red2 = np.array([180, 255, 255])
-
-    # Buat mask untuk setiap warna
-    mask_black = cv.inRange(hsv_plate, lower_black, upper_black)
-    mask_white = cv.inRange(hsv_plate, lower_white, upper_white)
-    mask_yellow = cv.inRange(hsv_plate, lower_yellow, upper_yellow)
-    mask_red1 = cv.inRange(hsv_plate, lower_red1, upper_red1)
-    mask_red2 = cv.inRange(hsv_plate, lower_red2, upper_red2)
-    mask_red = cv.bitwise_or(mask_red1, mask_red2)
-
-    # Klasifikasi Warna
-    vehicle_classification = []
-
-    if cv.countNonZero(mask_black) > 0:
-        vehicle_classification.append("Pribadi (Hitam)")
-    if cv.countNonZero(mask_white) > 0:
-        vehicle_classification.append("Pribadi (Putih)")
-    if cv.countNonZero(mask_yellow) > 0:
-        vehicle_classification.append("Umum (Kuning)")
-    if cv.countNonZero(mask_red) > 0:
-        vehicle_classification.append("Pemerintah (Merah)")
-
+    # Klasifikasikan warna kendaraan
+    classification = classify_color(mask_black, mask_white, mask_yellow, mask_red)
+    
     # Tampilkan hasil
     plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
     plt.axis('off')
 
     # Tampilkan klasifikasi kendaraan berdasarkan warna plat nomor
-    if vehicle_classification:
-        most_common_classification = max(set(vehicle_classification), key=vehicle_classification.count)
-        plt.text(10, 20, most_common_classification, fontsize=12, color='red', bbox=dict(facecolor='white', alpha=0.5))
-    else:
-        plt.text(10, 20, "Plat nomor tidak terdeteksi", fontsize=12, color='red', bbox=dict(facecolor='white', alpha=0.5))
+    plt.text(10, 20, classification, fontsize=12, color='red', bbox=dict(facecolor='white', alpha=0.5))
 
     plt.show()

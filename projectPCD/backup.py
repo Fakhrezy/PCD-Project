@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Load gambar plat nomor
-img = cv.imread('project/data/plat.jpg')
+img = cv.imread('projectPCD/data/plathitam2.jpg')
 
 # Prapengolahan
 # Normalisasi Cahaya
@@ -64,9 +64,6 @@ else:
     mask_red2 = cv.inRange(hsv_plate, lower_red2, upper_red2)
     mask_red = cv.bitwise_or(mask_red1, mask_red2)
 
-    # Gabungkan semua mask
-    mask_combined = cv.bitwise_or(mask_black, mask_white, mask_yellow, mask_red)
-
     # Klasifikasi Warna
     vehicle_classification = []
 
@@ -82,9 +79,12 @@ else:
     # Tampilkan hasil
     plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
     plt.axis('off')
-    plt.show()
 
     # Tampilkan klasifikasi kendaraan berdasarkan warna plat nomor
-    print("Klasifikasi Warna Kendaraan:")
     if vehicle_classification:
-        print(vehicle_classification[0])
+        most_common_classification = max(set(vehicle_classification), key=vehicle_classification.count)
+        plt.text(10, 20, most_common_classification, fontsize=12, color='red', bbox=dict(facecolor='white', alpha=0.5))
+    else:
+        plt.text(10, 20, "Plat nomor tidak terdeteksi", fontsize=12, color='red', bbox=dict(facecolor='white', alpha=0.5))
+
+    plt.show()

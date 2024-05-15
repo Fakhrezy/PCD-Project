@@ -3,28 +3,31 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Fungsi untuk mengklasifikasikan warna kendaraan
-def classify_color(mask_black, mask_white, mask_yellow, mask_red):
+def classify_color(mask_black, mask_white, mask_yellow, mask_red, mask_green):
     # Hitung jumlah piksel warna pada setiap mask
     count_black = cv.countNonZero(mask_black)
     count_white = cv.countNonZero(mask_white)
     count_yellow = cv.countNonZero(mask_yellow)
     count_red = cv.countNonZero(mask_red)
+    count_green = cv.countNonZero(mask_green)
 
     # Klasifikasi berdasarkan jumlah piksel warna
-    if count_red > count_black and count_red > count_white and count_red > count_yellow:
+    if count_red > count_black and count_red > count_white and count_red > count_yellow and count_red > count_green:
         return "Kendaraan Pemerintah"
-    elif count_black > count_white and count_black > count_yellow and count_black > count_red:
+    elif count_black > count_white and count_black > count_yellow and count_black > count_red and count_black > count_green:
         return "Kendaraan Pribadi"
-    elif count_white > count_black and count_white > count_yellow and count_white > count_red:
+    elif count_white > count_black and count_white > count_yellow and count_white > count_red and count_white > count_green:
         return "Kendaraan Pribadi"
-    elif count_yellow > count_black and count_yellow > count_white and count_yellow > count_red:
+    elif count_yellow > count_black and count_yellow > count_white and count_yellow > count_red and count_yellow > count_green:
         return "Kendaraan Umum"
+    elif count_green > count_black and count_green > count_white and count_green > count_yellow and count_green > count_red:
+        return "Kendaraan Diplomatik"
     else:
         return "Tidak Diketahui"
 
 # Fungsi untuk melakukan segmentasi warna pada citra HSV
 def segment_color(hsv_plate):
-    # Tentukan rentang warna untuk hitam, putih, kuning, dan merah
+    # Tentukan rentang warna untuk hitam, putih, kuning, merah, dan hijau
     lower_black = np.array([0, 0, 0])
     upper_black = np.array([180, 255, 30])
 
@@ -39,6 +42,9 @@ def segment_color(hsv_plate):
     lower_red2 = np.array([160, 100, 100])
     upper_red2 = np.array([180, 255, 255])
 
+    lower_green = np.array([40, 40, 40])
+    upper_green = np.array([80, 255, 255])
+
     # Buat mask untuk setiap warna
     mask_black = cv.inRange(hsv_plate, lower_black, upper_black)
     mask_white = cv.inRange(hsv_plate, lower_white, upper_white)
@@ -46,11 +52,12 @@ def segment_color(hsv_plate):
     mask_red1 = cv.inRange(hsv_plate, lower_red1, upper_red1)
     mask_red2 = cv.inRange(hsv_plate, lower_red2, upper_red2)
     mask_red = cv.bitwise_or(mask_red1, mask_red2)
+    mask_green = cv.inRange(hsv_plate, lower_green, upper_green)
 
-    return mask_black, mask_white, mask_yellow, mask_red
+    return mask_black, mask_white, mask_yellow, mask_red, mask_green
 
 # Load gambar plat nomor
-img = cv.imread('projectPCD/data/platmerah.jpg')
+img = cv.imread('projectPCD/data/plathitam1.jpg')
 
 # Prapengolahan
 # Normalisasi Cahaya
@@ -92,10 +99,10 @@ else:
     hsv_plate = cv.cvtColor(cropped_img, cv.COLOR_BGR2HSV)
 
     # Lakukan segmentasi warna pada citra HSV
-    mask_black, mask_white, mask_yellow, mask_red = segment_color(hsv_plate)
+    mask_black, mask_white, mask_yellow, mask_red, mask_green = segment_color(hsv_plate)
 
     # Klasifikasikan warna kendaraan
-    classification = classify_color(mask_black, mask_white, mask_yellow, mask_red)
+    classification = classify_color(mask_black, mask_white, mask_yellow, mask_red, mask_green)
     
     # Tampilkan hasil
     plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
