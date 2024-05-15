@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Load gambar plat nomor
-img = cv.imread('project/data/plathitam2.jpg')
+img = cv.imread('projectPCD/data/plathitam2.jpg')
 
 # Prapengolahan
 # Normalisasi Cahaya

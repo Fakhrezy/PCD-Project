@@ -12,13 +12,13 @@ def classify_color(mask_black, mask_white, mask_yellow, mask_red):
 
     # Klasifikasi berdasarkan jumlah piksel warna
     if count_red > count_black and count_red > count_white and count_red > count_yellow:
-        return "Pemerintah (Merah)"
+        return "Kendaraan Pemerintah"
     elif count_black > count_white and count_black > count_yellow and count_black > count_red:
-        return "Pribadi (Hitam)"
+        return "Kendaraan Pribadi"
     elif count_white > count_black and count_white > count_yellow and count_white > count_red:
-        return "Pribadi (Putih)"
+        return "Kendaraan Pribadi"
     elif count_yellow > count_black and count_yellow > count_white and count_yellow > count_red:
-        return "Umum (Kuning)"
+        return "Kendaraan Umum"
     else:
         return "Tidak Diketahui"
 
@@ -50,7 +50,7 @@ def segment_color(hsv_plate):
     return mask_black, mask_white, mask_yellow, mask_red
 
 # Load gambar plat nomor
-img = cv.imread('project/data/platmerah.jpg')
+img = cv.imread('projectPCD/data/platmerah.jpg')
 
 # Prapengolahan
 # Normalisasi Cahaya
